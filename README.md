@@ -6,7 +6,7 @@ Static landing page for GitHub Pages with a Supabase-backed bulletin board.
 
 - The landing page is in `index.html`.
 - The bulletin board UI is embedded in the `#board` section.
-- Posts are read from and inserted into the Supabase table `public.board_posts`.
+- Posts are read from and inserted into the Supabase table `public.board_posts` after Supabase Auth login.
 - The registration page is in `register.html`.
 - Registration requests are inserted into the Supabase table `public.registration_requests`.
 - The database setup SQL is in `supabase-schema.sql`.
@@ -40,9 +40,20 @@ The anon key is public by design. Do not paste the service role key into fronten
 
 ## Database behavior
 
-The table uses Row Level Security policies that allow anonymous visitors to read posts and create posts only. Update and delete are not granted to public users.
+The bulletin board table uses Row Level Security policies that allow authenticated users to read posts and create posts only. Anonymous visitors cannot read or create board posts.
 
 The registration table allows anonymous visitors to create registration requests only. Public read is not granted, so submitted email addresses are not readable through the anon key.
+
+## Supabase Auth setup
+
+The board uses Supabase Auth with email and password.
+
+1. Open Supabase > Authentication > Providers.
+2. Make sure Email is enabled.
+3. Decide whether email confirmation is required.
+   - If confirmation is enabled, new users must open the confirmation email before login.
+   - If confirmation is disabled, users can log in immediately after signup.
+4. Run `supabase-schema.sql` again in SQL Editor to apply the authenticated-only board policies.
 
 ## Local check
 

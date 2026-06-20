@@ -521,6 +521,57 @@
         align-items: start;
       }
 
+      .auth-panel {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: end;
+        margin-bottom: 18px;
+        padding: 18px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .auth-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .auth-button {
+        min-height: 44px;
+        padding: 0 14px;
+        color: #fff;
+        background: var(--teal);
+        border: 0;
+        border-radius: 7px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 850;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .auth-button.secondary {
+        color: var(--ink);
+        background: #fbfcf8;
+        border: 1px solid var(--line);
+      }
+
+      .auth-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .auth-status {
+        grid-column: 1 / -1;
+        min-height: 22px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
       .board-form,
       .board-feed {
         background: #fff;
@@ -722,6 +773,7 @@
 
         .hero-inner,
         .section-head,
+        .auth-panel,
         .board-shell,
         .audience,
         .cta-inner {
@@ -1004,6 +1056,22 @@
                 高松市内の渋滞、工事、イベント周辺の混雑など、移動前に知っておきたい現地情報を投稿できます。
               </p>
             </div>
+            <form class="auth-panel" id="auth-form">
+              <div class="field">
+                <label for="auth-email">メールアドレス</label>
+                <input id="auth-email" name="email" type="email" maxlength="120" autocomplete="email" required />
+              </div>
+              <div class="field">
+                <label for="auth-password">パスワード</label>
+                <input id="auth-password" name="password" type="password" minlength="6" maxlength="72" autocomplete="current-password" required />
+              </div>
+              <div class="auth-actions">
+                <button class="auth-button" id="signup-button" type="button">新規登録</button>
+                <button class="auth-button secondary" id="login-button" type="button">ログイン</button>
+                <button class="auth-button secondary" id="logout-button" type="button" hidden>ログアウト</button>
+              </div>
+              <p class="auth-status" id="auth-status" role="status" aria-live="polite">掲示板の閲覧と投稿にはログインが必要です。</p>
+            </form>
             <div class="board-shell">
               <form class="board-form" id="board-form">
                 <div class="field">
@@ -1056,6 +1124,13 @@
       const SUPABASE_ANON_KEY = "sb_publishable_qAMFmmtvr6OzLyjN_5cIMA_8nOiTjQD";
       const BOARD_TABLE = "board_posts";
 
+      const authForm = document.querySelector("#auth-form");
+      const authEmail = document.querySelector("#auth-email");
+      const authPassword = document.querySelector("#auth-password");
+      const signupButton = document.querySelector("#signup-button");
+      const loginButton = document.querySelector("#login-button");
+      const logoutButton = document.querySelector("#logout-button");
+      const authStatus = document.querySelector("#auth-status");
       const boardForm = document.querySelector("#board-form");
       const boardList = document.querySelector("#board-list");
       const boardStatus = document.querySelector("#board-status");
@@ -1063,6 +1138,11 @@
       const boardSubmit = document.querySelector(".board-submit");
       const isConfigured = SUPABASE_URL.startsWith("https://") && SUPABASE_ANON_KEY.length > 40;
       const supabaseClient = isConfigured ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+      let currentSession = null;
+
+      function setAuthStatus(message) {
+        authStatus.textContent = message;
+      }
 
       function setBoardStatus(message) {
         boardStatus.textContent = message;
@@ -1074,6 +1154,36 @@
         empty.className = "board-empty";
         empty.textContent = message;
         boardList.append(empty);
+      }
+
+      function setBoardEnabled(isEnabled) {
+        boardSubmit.disabled = !isEnabled;
+        boardRefresh.disabled = !isEnabled;
+        boardForm.querySelectorAll("input, textarea").forEach((field) => {
+          field.disabled = !isEnabled;
+        });
+      }
+
+      function updateAuthUi(session) {
+        currentSession = session;
+        const isSignedIn = Boolean(session?.user);
+
+        authEmail.disabled = isSignedIn;
+        authPassword.disabled = isSignedIn;
+        signupButton.hidden = isSignedIn;
+        loginButton.hidden = isSignedIn;
+        logoutButton.hidden = !isSignedIn;
+        setBoardEnabled(isSignedIn && Boolean(supabaseClient));
+
+        if (isSignedIn) {
+          setAuthStatus(`${session.user.email} でログイン中です。`);
+          loadPosts();
+          return;
+        }
+
+        renderEmpty("ログインすると掲示板の投稿を表示します。");
+        setAuthStatus("掲示板の閲覧と投稿にはログインが必要です。");
+        setBoardStatus("ログイン後に掲示板を利用できます。");
       }
 
       function formatPostedAt(value) {
@@ -1122,7 +1232,13 @@
         if (!supabaseClient) {
           renderEmpty("SupabaseのURLとanon keyをindex.htmlに設定してください。");
           setBoardStatus("未接続です。Supabase設定後に投稿できます。");
-          boardSubmit.disabled = true;
+          setBoardEnabled(false);
+          return;
+        }
+
+        if (!currentSession?.user) {
+          renderEmpty("ログインすると掲示板の投稿を表示します。");
+          setBoardStatus("ログイン後に掲示板を利用できます。");
           return;
         }
 
@@ -1145,11 +1261,73 @@
 
       boardRefresh.addEventListener("click", loadPosts);
 
+      async function submitAuth(mode) {
+        if (!supabaseClient) {
+          setAuthStatus("Supabaseの接続設定が必要です。");
+          return;
+        }
+
+        const email = authEmail.value.trim();
+        const password = authPassword.value;
+
+        if (!email || !password) {
+          setAuthStatus("メールアドレスとパスワードを入力してください。");
+          return;
+        }
+
+        signupButton.disabled = true;
+        loginButton.disabled = true;
+        setAuthStatus(mode === "signup" ? "新規登録しています。" : "ログインしています。");
+
+        const { data, error } =
+          mode === "signup"
+            ? await supabaseClient.auth.signUp({ email, password })
+            : await supabaseClient.auth.signInWithPassword({ email, password });
+
+        signupButton.disabled = false;
+        loginButton.disabled = false;
+
+        if (error) {
+          setAuthStatus(error.message);
+          return;
+        }
+
+        if (mode === "signup" && !data.session) {
+          setAuthStatus("確認メールを送信しました。メール内のリンクを開いてからログインしてください。");
+          return;
+        }
+
+        authForm.reset();
+        setAuthStatus("認証しました。掲示板を読み込みます。");
+      }
+
+      signupButton.addEventListener("click", () => submitAuth("signup"));
+      loginButton.addEventListener("click", () => submitAuth("login"));
+      authForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        submitAuth("login");
+      });
+      logoutButton.addEventListener("click", async () => {
+        if (!supabaseClient) {
+          return;
+        }
+
+        logoutButton.disabled = true;
+        await supabaseClient.auth.signOut();
+        logoutButton.disabled = false;
+        authForm.reset();
+      });
+
       boardForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         if (!supabaseClient) {
           setBoardStatus("Supabaseの接続設定が必要です。");
+          return;
+        }
+
+        if (!currentSession?.user) {
+          setBoardStatus("投稿するにはログインしてください。");
           return;
         }
 
@@ -1179,7 +1357,19 @@
         await loadPosts();
       });
 
-      loadPosts();
+      if (!supabaseClient) {
+        setBoardEnabled(false);
+        renderEmpty("SupabaseのURLとanon keyをindex.htmlに設定してください。");
+        setAuthStatus("Supabaseの接続設定が必要です。");
+      } else {
+        setBoardEnabled(false);
+        supabaseClient.auth.onAuthStateChange((_event, session) => {
+          updateAuthUi(session);
+        });
+        supabaseClient.auth.getSession().then(({ data }) => {
+          updateAuthUi(data.session);
+        });
+      }
     </script>
   </body>
 </html>
