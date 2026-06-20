@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>掲示板 | TAKAMATSU FLOW</title>
-    <meta name="description" content="TAKAMATSU FLOWのログインユーザー専用掲示板です。" />
+    <title>交通ボード | TAKAMATSU FLOW</title>
+    <meta name="description" content="TAKAMATSU FLOWのログインユーザー専用交通ボードです。" />
     <style>
       :root {
         --ink: #12232e;
@@ -14,6 +14,7 @@
         --teal: #007b72;
         --blue: #165d9f;
         --yellow: #f3b43f;
+        --coral: #e65f4b;
         --shadow: 0 24px 70px rgba(18, 35, 46, 0.16);
       }
 
@@ -75,9 +76,8 @@
         font-weight: 800;
       }
 
-      .text-button,
-      .primary-button,
-      .secondary-button {
+      button,
+      .button-link {
         min-height: 42px;
         padding: 0 14px;
         border-radius: 7px;
@@ -87,46 +87,52 @@
         cursor: pointer;
       }
 
-      .text-button {
-        color: var(--muted);
-        background: transparent;
-        border: 0;
-      }
-
       .primary-button {
         color: #fff;
         background: var(--teal);
         border: 0;
       }
 
-      .secondary-button {
+      .secondary-button,
+      .button-link {
         color: var(--ink);
         background: #fbfcf8;
         border: 1px solid var(--line);
       }
 
-      main {
-        padding: clamp(42px, 7vw, 78px) clamp(18px, 4vw, 56px);
+      .text-button {
+        color: var(--muted);
+        background: transparent;
+        border: 0;
       }
 
-      .section-inner {
-        width: min(1120px, 100%);
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      main {
+        padding: clamp(36px, 6vw, 72px) clamp(18px, 4vw, 56px);
+      }
+
+      .app-shell {
+        width: min(1180px, 100%);
         margin: 0 auto;
       }
 
-      .section-head {
+      .hero-row {
         display: grid;
-        grid-template-columns: minmax(0, 0.85fr) minmax(280px, 1fr);
+        grid-template-columns: minmax(0, 0.95fr) minmax(280px, 1fr);
         gap: 28px;
         align-items: end;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
       }
 
       .eyebrow {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        margin: 0 0 18px;
+        margin: 0 0 14px;
         color: var(--teal);
         font-size: 13px;
         font-weight: 800;
@@ -138,33 +144,102 @@
         height: 10px;
         background: var(--yellow);
         border-radius: 50%;
-        box-shadow: 18px 0 0 var(--blue);
+        box-shadow: 18px 0 0 var(--coral), 36px 0 0 var(--blue);
       }
 
       h1 {
         margin: 0;
-        font-size: clamp(32px, 5.8vw, 58px);
+        font-size: clamp(32px, 5.6vw, 58px);
         line-height: 1.1;
         letter-spacing: 0;
       }
 
-      .section-head p {
+      .hero-row p {
         margin: 0;
         color: var(--muted);
       }
 
-      .board-shell {
-        display: grid;
-        grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.18fr);
-        gap: 22px;
-        align-items: start;
+      .view-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
       }
 
+      .tab-button.active {
+        color: #fff;
+        background: var(--blue);
+        border-color: var(--blue);
+      }
+
+      .view-panel[hidden] {
+        display: none !important;
+      }
+
+      .map-panel {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 310px;
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .map-frame {
+        min-height: 620px;
+        background: #d9e5df;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .map-frame iframe {
+        width: 100%;
+        height: 100%;
+        min-height: 620px;
+        border: 0;
+      }
+
+      .route-panel,
       .board-form,
       .board-feed {
         background: #fff;
         border: 1px solid var(--line);
         border-radius: 8px;
+      }
+
+      .route-panel {
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .route-panel h2,
+      .board-form h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
+
+      .route-item {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .route-item:last-child {
+        border-bottom: 0;
+      }
+
+      .route-item strong {
+        display: block;
+      }
+
+      .route-item span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .board-layout {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.18fr);
+        gap: 22px;
+        align-items: start;
       }
 
       .board-form {
@@ -263,15 +338,21 @@
         overflow-wrap: anywhere;
       }
 
-      .board-empty {
+      .empty-state {
         padding: 32px 18px;
         color: var(--muted);
       }
 
-      @media (max-width: 860px) {
-        .section-head,
-        .board-shell {
+      @media (max-width: 900px) {
+        .hero-row,
+        .map-panel,
+        .board-layout {
           grid-template-columns: 1fr;
+        }
+
+        .map-frame,
+        .map-frame iframe {
+          min-height: 480px;
         }
 
         .header-actions {
@@ -289,46 +370,82 @@
       </a>
       <div class="header-actions">
         <span id="user-email">確認中です</span>
-        <a class="secondary-button" href="index.html">トップへ</a>
+        <a class="button-link" href="index.html">トップへ</a>
         <button class="text-button" id="logout-button" type="button">ログアウト</button>
       </div>
     </header>
 
     <main>
-      <section class="section-inner">
-        <div class="section-head">
+      <div class="app-shell">
+        <div class="hero-row">
           <div>
             <p class="eyebrow">ログインユーザー専用</p>
-            <h1>道路状況を共有する掲示板</h1>
+            <h1>交通マップと掲示板</h1>
           </div>
-          <p>高松市内の渋滞、工事、イベント周辺の混雑など、移動前に知っておきたい現地情報を投稿できます。</p>
+          <p>地図で高松市周辺の道路状況を確認し、掲示板で現地情報を共有できます。</p>
         </div>
 
-        <div class="board-shell">
-          <form class="board-form" id="board-form">
-            <div class="field">
-              <label for="board-name">名前</label>
-              <input id="board-name" name="name" type="text" maxlength="40" autocomplete="name" placeholder="例：中央通り利用者" required />
-            </div>
-            <div class="field">
-              <label for="board-message">投稿内容</label>
-              <textarea id="board-message" name="message" maxlength="500" placeholder="例：栗林公園北側、工事で1車線規制中です。" required></textarea>
-            </div>
-            <button class="primary-button" id="board-submit" type="submit">投稿する</button>
-            <p class="board-status" id="board-status" role="status" aria-live="polite"></p>
-          </form>
+        <div class="view-tabs" role="tablist" aria-label="交通ボード表示切替">
+          <button class="secondary-button tab-button active" id="map-tab" type="button" data-view="map">地図を確認</button>
+          <button class="secondary-button tab-button" id="board-tab" type="button" data-view="board">掲示板に投稿</button>
+        </div>
 
-          <div class="board-feed" aria-live="polite">
-            <div class="board-toolbar">
-              <strong>最新の投稿</strong>
-              <button class="secondary-button" id="board-refresh" type="button">更新</button>
+        <section class="view-panel" id="map-view" aria-labelledby="map-tab">
+          <div class="map-panel">
+            <div class="map-frame">
+              <iframe
+                title="高松市周辺のGoogle Map"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                src="https://www.google.com/maps?q=%E9%AB%98%E6%9D%BE%E5%B8%82%20%E4%B8%AD%E5%A4%AE%E9%80%9A%E3%82%8A&z=13&output=embed"
+              ></iframe>
             </div>
-            <div class="board-list" id="board-list">
-              <p class="board-empty">投稿を読み込み中です。</p>
+            <aside class="route-panel">
+              <h2>確認ポイント</h2>
+              <div class="route-item">
+                <strong>市街地</strong>
+                <span>中央通り、駅周辺、商業施設周辺の混雑を確認</span>
+              </div>
+              <div class="route-item">
+                <strong>南方面</strong>
+                <span>仏生山、香南、塩江方面への移動前に確認</span>
+              </div>
+              <div class="route-item">
+                <strong>東西方面</strong>
+                <span>国分寺、牟礼、屋島方面の迂回判断に活用</span>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view-panel" id="board-view" aria-labelledby="board-tab" hidden>
+          <div class="board-layout">
+            <form class="board-form" id="board-form">
+              <h2>道路状況を投稿</h2>
+              <div class="field">
+                <label for="board-name">名前</label>
+                <input id="board-name" name="name" type="text" maxlength="40" autocomplete="name" placeholder="例：中央通り利用者" required />
+              </div>
+              <div class="field">
+                <label for="board-message">投稿内容</label>
+                <textarea id="board-message" name="message" maxlength="500" placeholder="例：栗林公園北側、工事で1車線規制中です。" required></textarea>
+              </div>
+              <button class="primary-button" id="board-submit" type="submit">投稿する</button>
+              <p class="board-status" id="board-status" role="status" aria-live="polite"></p>
+            </form>
+
+            <div class="board-feed" aria-live="polite">
+              <div class="board-toolbar">
+                <strong>最新の投稿</strong>
+                <button class="secondary-button" id="board-refresh" type="button">更新</button>
+              </div>
+              <div class="board-list" id="board-list">
+                <p class="empty-state">投稿を読み込み中です。</p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -345,16 +462,28 @@
       const boardStatus = document.querySelector("#board-status");
       const boardRefresh = document.querySelector("#board-refresh");
       const boardSubmit = document.querySelector("#board-submit");
+      const tabButtons = document.querySelectorAll(".tab-button");
+      const mapView = document.querySelector("#map-view");
+      const boardView = document.querySelector("#board-view");
       let currentSession = null;
 
       function setBoardStatus(message) {
         boardStatus.textContent = message;
       }
 
+      function switchView(view) {
+        const showBoard = view === "board";
+        mapView.hidden = showBoard;
+        boardView.hidden = !showBoard;
+        tabButtons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.view === view);
+        });
+      }
+
       function renderEmpty(message) {
         boardList.replaceChildren();
         const empty = document.createElement("p");
-        empty.className = "board-empty";
+        empty.className = "empty-state";
         empty.textContent = message;
         boardList.append(empty);
       }
@@ -432,6 +561,10 @@
         await loadPosts();
       }
 
+      tabButtons.forEach((button) => {
+        button.addEventListener("click", () => switchView(button.dataset.view));
+      });
+
       boardRefresh.addEventListener("click", loadPosts);
 
       logoutButton.addEventListener("click", async () => {
@@ -474,6 +607,7 @@
         await loadPosts();
       });
 
+      switchView("map");
       requireSession();
     </script>
   </body>

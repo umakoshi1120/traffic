@@ -1185,8 +1185,13 @@
         setBusy(true);
         setStatus(authMode === "signup" ? "新規登録しています。" : "ログインしています。");
 
+        const boardUrl = new URL("board.html", window.location.href).href;
         const { data, error } = authMode === "signup"
-          ? await supabaseClient.auth.signUp({ email, password })
+          ? await supabaseClient.auth.signUp({
+              email,
+              password,
+              options: { emailRedirectTo: boardUrl },
+            })
           : await supabaseClient.auth.signInWithPassword({ email, password });
 
         setBusy(false);
@@ -1199,8 +1204,7 @@
         if (authMode === "signup") {
           const profileResult = await saveSignupProfile(data.user, email);
           if (profileResult?.error) {
-            setStatus(`Auth登録は完了しましたが、一覧テーブルへの保存に失敗しました: ${profileResult.error.message}`);
-            return;
+            console.warn("auth profile save failed", profileResult.error.message);
           }
         }
 

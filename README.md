@@ -61,6 +61,14 @@ The landing page switches between login and signup forms. Login requires email a
 
 After running `supabase-schema.sql`, new signups will appear in `Table Editor > auth_profiles`. Passwords are never stored in this table.
 
+If email confirmation is enabled, add this redirect URL in Supabase Authentication URL settings:
+
+```text
+https://umakoshi1120.github.io/traffic/board.html
+```
+
+For immediate login tests, disable email confirmation or open the confirmation email before logging in.
+
 ## Local check
 
 After setting the URL and anon key, open `index.html` in a browser and try a test post. If the board says the Supabase table or RLS settings cannot be found, run `supabase-schema.sql` again in the same Supabase project.
