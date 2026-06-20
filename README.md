@@ -5,7 +5,8 @@ Static landing page for GitHub Pages with a Supabase-backed bulletin board.
 ## What is already built
 
 - The landing page is in `index.html`.
-- The bulletin board UI is embedded in the `#board` section.
+- The landing page has the bulletin board login/signup entry in the `#board` section.
+- The bulletin board itself is in `board.html`.
 - Posts are read from and inserted into the Supabase table `public.board_posts` after Supabase Auth login.
 - The registration page is in `register.html`.
 - Registration requests are inserted into the Supabase table `public.registration_requests`.
@@ -54,6 +55,8 @@ The board uses Supabase Auth with email and password.
    - If confirmation is enabled, new users must open the confirmation email before login.
    - If confirmation is disabled, users can log in immediately after signup.
 4. Run `supabase-schema.sql` again in SQL Editor to apply the authenticated-only board policies.
+
+The landing page switches between login and signup forms. Login requires email and password. Signup requires email, password, and password confirmation. Successful login redirects to `board.html`.
 
 ## Local check
 

@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>掲示板 | TAKAMATSU FLOW</title>
+    <meta name="description" content="TAKAMATSU FLOWのログインユーザー専用掲示板です。" />
+    <style>
+      :root {
+        --ink: #12232e;
+        --muted: #52636d;
+        --line: rgba(18, 35, 46, 0.14);
+        --paper: #fbfcf8;
+        --teal: #007b72;
+        --blue: #165d9f;
+        --yellow: #f3b43f;
+        --shadow: 0 24px 70px rgba(18, 35, 46, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
+        line-height: 1.65;
+        letter-spacing: 0;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px clamp(18px, 4vw, 56px);
+        background: rgba(251, 252, 248, 0.9);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        color: #fff;
+        background: var(--teal);
+        border-radius: 7px;
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .text-button,
+      .primary-button,
+      .secondary-button {
+        min-height: 42px;
+        padding: 0 14px;
+        border-radius: 7px;
+        font: inherit;
+        font-size: 14px;
+        font-weight: 850;
+        cursor: pointer;
+      }
+
+      .text-button {
+        color: var(--muted);
+        background: transparent;
+        border: 0;
+      }
+
+      .primary-button {
+        color: #fff;
+        background: var(--teal);
+        border: 0;
+      }
+
+      .secondary-button {
+        color: var(--ink);
+        background: #fbfcf8;
+        border: 1px solid var(--line);
+      }
+
+      main {
+        padding: clamp(42px, 7vw, 78px) clamp(18px, 4vw, 56px);
+      }
+
+      .section-inner {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+      }
+
+      .section-head {
+        display: grid;
+        grid-template-columns: minmax(0, 0.85fr) minmax(280px, 1fr);
+        gap: 28px;
+        align-items: end;
+        margin-bottom: 28px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 18px;
+        color: var(--teal);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        background: var(--yellow);
+        border-radius: 50%;
+        box-shadow: 18px 0 0 var(--blue);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(32px, 5.8vw, 58px);
+        line-height: 1.1;
+        letter-spacing: 0;
+      }
+
+      .section-head p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .board-shell {
+        display: grid;
+        grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.18fr);
+        gap: 22px;
+        align-items: start;
+      }
+
+      .board-form,
+      .board-feed {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .board-form {
+        padding: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+        margin-bottom: 14px;
+      }
+
+      .field label {
+        font-size: 13px;
+        font-weight: 850;
+      }
+
+      .field input,
+      .field textarea {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        color: var(--ink);
+        background: #fbfcf8;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font: inherit;
+        letter-spacing: 0;
+      }
+
+      .field textarea {
+        min-height: 150px;
+        resize: vertical;
+      }
+
+      .field input:focus,
+      .field textarea:focus {
+        outline: 3px solid rgba(0, 123, 114, 0.16);
+        border-color: var(--teal);
+      }
+
+      .board-status {
+        min-height: 24px;
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .board-feed {
+        min-height: 420px;
+        overflow: hidden;
+      }
+
+      .board-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .board-list {
+        display: grid;
+        max-height: 560px;
+        overflow: auto;
+      }
+
+      .board-message {
+        padding: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .board-message:last-child {
+        border-bottom: 0;
+      }
+
+      .message-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .message-name {
+        color: var(--ink);
+        font-weight: 850;
+      }
+
+      .message-text {
+        margin: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .board-empty {
+        padding: 32px 18px;
+        color: var(--muted);
+      }
+
+      @media (max-width: 860px) {
+        .section-head,
+        .board-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .header-actions {
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="TAKAMATSU FLOW">
+        <span class="brand-mark" aria-hidden="true">→</span>
+        <span>TAKAMATSU FLOW</span>
+      </a>
+      <div class="header-actions">
+        <span id="user-email">確認中です</span>
+        <a class="secondary-button" href="index.html">トップへ</a>
+        <button class="text-button" id="logout-button" type="button">ログアウト</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="section-inner">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">ログインユーザー専用</p>
+            <h1>道路状況を共有する掲示板</h1>
+          </div>
+          <p>高松市内の渋滞、工事、イベント周辺の混雑など、移動前に知っておきたい現地情報を投稿できます。</p>
+        </div>
+
+        <div class="board-shell">
+          <form class="board-form" id="board-form">
+            <div class="field">
+              <label for="board-name">名前</label>
+              <input id="board-name" name="name" type="text" maxlength="40" autocomplete="name" placeholder="例：中央通り利用者" required />
+            </div>
+            <div class="field">
+              <label for="board-message">投稿内容</label>
+              <textarea id="board-message" name="message" maxlength="500" placeholder="例：栗林公園北側、工事で1車線規制中です。" required></textarea>
+            </div>
+            <button class="primary-button" id="board-submit" type="submit">投稿する</button>
+            <p class="board-status" id="board-status" role="status" aria-live="polite"></p>
+          </form>
+
+          <div class="board-feed" aria-live="polite">
+            <div class="board-toolbar">
+              <strong>最新の投稿</strong>
+              <button class="secondary-button" id="board-refresh" type="button">更新</button>
+            </div>
+            <div class="board-list" id="board-list">
+              <p class="board-empty">投稿を読み込み中です。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const SUPABASE_URL = "https://sasdgpkdnxdfzsgeicnj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_qAMFmmtvr6OzLyjN_5cIMA_8nOiTjQD";
+      const BOARD_TABLE = "board_posts";
+
+      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const userEmail = document.querySelector("#user-email");
+      const logoutButton = document.querySelector("#logout-button");
+      const boardForm = document.querySelector("#board-form");
+      const boardList = document.querySelector("#board-list");
+      const boardStatus = document.querySelector("#board-status");
+      const boardRefresh = document.querySelector("#board-refresh");
+      const boardSubmit = document.querySelector("#board-submit");
+      let currentSession = null;
+
+      function setBoardStatus(message) {
+        boardStatus.textContent = message;
+      }
+
+      function renderEmpty(message) {
+        boardList.replaceChildren();
+        const empty = document.createElement("p");
+        empty.className = "board-empty";
+        empty.textContent = message;
+        boardList.append(empty);
+      }
+
+      function formatPostedAt(value) {
+        return new Intl.DateTimeFormat("ja-JP", {
+          month: "numeric",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(new Date(value));
+      }
+
+      function renderPosts(posts) {
+        boardList.replaceChildren();
+
+        if (!posts.length) {
+          renderEmpty("まだ投稿はありません。最初の道路状況を共有してください。");
+          return;
+        }
+
+        posts.forEach((post) => {
+          const article = document.createElement("article");
+          article.className = "board-message";
+
+          const meta = document.createElement("div");
+          meta.className = "message-meta";
+
+          const name = document.createElement("span");
+          name.className = "message-name";
+          name.textContent = post.name;
+
+          const time = document.createElement("time");
+          time.dateTime = post.created_at;
+          time.textContent = formatPostedAt(post.created_at);
+
+          const text = document.createElement("p");
+          text.className = "message-text";
+          text.textContent = post.message;
+
+          meta.append(name, time);
+          article.append(meta, text);
+          boardList.append(article);
+        });
+      }
+
+      async function loadPosts() {
+        setBoardStatus("投稿を読み込み中です。");
+        const { data, error } = await supabaseClient
+          .from(BOARD_TABLE)
+          .select("id,name,message,created_at")
+          .order("created_at", { ascending: false })
+          .limit(30);
+
+        if (error) {
+          renderEmpty("投稿を読み込めませんでした。ログイン状態とRLS設定を確認してください。");
+          setBoardStatus(error.message);
+          return;
+        }
+
+        renderPosts(data || []);
+        setBoardStatus("最新の投稿を表示しています。");
+      }
+
+      async function requireSession() {
+        const { data } = await supabaseClient.auth.getSession();
+        currentSession = data.session;
+
+        if (!currentSession?.user) {
+          window.location.href = "index.html#board";
+          return;
+        }
+
+        userEmail.textContent = currentSession.user.email;
+        await loadPosts();
+      }
+
+      boardRefresh.addEventListener("click", loadPosts);
+
+      logoutButton.addEventListener("click", async () => {
+        logoutButton.disabled = true;
+        await supabaseClient.auth.signOut();
+        window.location.href = "index.html#board";
+      });
+
+      boardForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (!currentSession?.user) {
+          setBoardStatus("投稿するにはログインしてください。");
+          return;
+        }
+
+        const formData = new FormData(boardForm);
+        const name = String(formData.get("name") || "").trim();
+        const message = String(formData.get("message") || "").trim();
+
+        if (!name || !message) {
+          setBoardStatus("名前と投稿内容を入力してください。");
+          return;
+        }
+
+        boardSubmit.disabled = true;
+        setBoardStatus("投稿しています。");
+
+        const { error } = await supabaseClient.from(BOARD_TABLE).insert({ name, message });
+
+        boardSubmit.disabled = false;
+
+        if (error) {
+          setBoardStatus(error.message);
+          return;
+        }
+
+        boardForm.reset();
+        setBoardStatus("投稿しました。");
+        await loadPosts();
+      });
+
+      requireSession();
+    </script>
+  </body>
+</html>
