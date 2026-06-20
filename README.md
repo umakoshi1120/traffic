@@ -5,10 +5,8 @@ Static landing page for GitHub Pages with a Supabase-backed bulletin board.
 ## What is already built
 
 - The landing page is in `index.html`.
-- The landing page has the bulletin board login/signup entry in the `#board` section.
-- The bulletin board itself is in `board.html`.
-- Posts are read from and inserted into the Supabase table `public.board_posts` after Supabase Auth login.
-- New Auth signups are recorded in the Supabase table `public.auth_profiles`.
+- The bulletin board UI is embedded in the `#board` section.
+- Posts are read from and inserted into the Supabase table `public.board_posts`.
 - The registration page is in `register.html`.
 - Registration requests are inserted into the Supabase table `public.registration_requests`.
 - The database setup SQL is in `supabase-schema.sql`.
@@ -42,32 +40,9 @@ The anon key is public by design. Do not paste the service role key into fronten
 
 ## Database behavior
 
-The bulletin board table uses Row Level Security policies that allow authenticated users to read posts and create posts only. Anonymous visitors cannot read or create board posts.
+The table uses Row Level Security policies that allow anonymous visitors to read posts and create posts only. Update and delete are not granted to public users.
 
 The registration table allows anonymous visitors to create registration requests only. Public read is not granted, so submitted email addresses are not readable through the anon key.
-
-## Supabase Auth setup
-
-The board uses Supabase Auth with email and password.
-
-1. Open Supabase > Authentication > Providers.
-2. Make sure Email is enabled.
-3. Decide whether email confirmation is required.
-   - If confirmation is enabled, new users must open the confirmation email before login.
-   - If confirmation is disabled, users can log in immediately after signup.
-4. Run `supabase-schema.sql` again in SQL Editor to apply the authenticated-only board policies.
-
-The landing page switches between login and signup forms. Login requires email and password. Signup requires email, password, and password confirmation. Successful login redirects to `board.html`.
-
-After running `supabase-schema.sql`, new signups will appear in `Table Editor > auth_profiles`. Passwords are never stored in this table.
-
-If email confirmation is enabled, add this redirect URL in Supabase Authentication URL settings:
-
-```text
-https://umakoshi1120.github.io/traffic/board.html
-```
-
-For immediate login tests, disable email confirmation or open the confirmation email before logging in.
 
 ## Local check
 

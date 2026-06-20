@@ -26,10 +26,6 @@
         box-sizing: border-box;
       }
 
-      [hidden] {
-        display: none !important;
-      }
-
       html {
         scroll-behavior: smooth;
       }
@@ -525,63 +521,6 @@
         align-items: start;
       }
 
-      .auth-panel {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-        gap: 12px;
-        align-items: end;
-        margin-bottom: 18px;
-        padding: 18px;
-        background: #fff;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-      }
-
-      .auth-actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .auth-button {
-        min-height: 44px;
-        padding: 0 14px;
-        color: #fff;
-        background: var(--teal);
-        border: 0;
-        border-radius: 7px;
-        font: inherit;
-        font-size: 14px;
-        font-weight: 850;
-        cursor: pointer;
-        white-space: nowrap;
-      }
-
-      .auth-button.secondary {
-        color: var(--ink);
-        background: #fbfcf8;
-        border: 1px solid var(--line);
-      }
-
-      .auth-button.active {
-        color: #fff;
-        background: var(--blue);
-        border-color: var(--blue);
-      }
-
-      .auth-button:disabled {
-        cursor: not-allowed;
-        opacity: 0.6;
-      }
-
-      .auth-status {
-        grid-column: 1 / -1;
-        min-height: 22px;
-        margin: 0;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
       .board-form,
       .board-feed {
         background: #fff;
@@ -783,7 +722,6 @@
 
         .hero-inner,
         .section-head,
-        .auth-panel,
         .board-shell,
         .audience,
         .cta-inner {
@@ -870,7 +808,7 @@
         <a href="#board">掲示板</a>
         <a href="#target">対象</a>
       </nav>
-      <a class="header-cta" href="#board">掲示板ログイン</a>
+      <a class="header-cta" href="register.html">登録する</a>
     </header>
 
     <main id="top">
@@ -892,8 +830,8 @@
               TAKAMATSU FLOWは、高松市内の道路状況をGoogle Mapから把握し、渋滞・混雑・迂回を考慮した最短経路をリアルタイムに提示する移動支援サービスです。
             </p>
             <div class="hero-actions">
-              <a class="primary-cta" href="#board">
-                掲示板を使う
+              <a class="primary-cta" href="register.html">
+                利用登録へ進む
                 <span aria-hidden="true">→</span>
               </a>
               <a class="secondary-cta" href="#map">地図連携を見る</a>
@@ -1061,32 +999,34 @@
         <section id="board" class="board-band">
           <div class="section-inner">
             <div class="section-head">
-              <h2>掲示板にログイン</h2>
+              <h2>道路状況を共有する掲示板</h2>
               <p>
-                道路状況の閲覧と投稿は、掲示板専用ページで利用できます。ログインまたは新規登録を行ってください。
+                高松市内の渋滞、工事、イベント周辺の混雑など、移動前に知っておきたい現地情報を投稿できます。
               </p>
             </div>
-            <form class="auth-panel" id="auth-form">
-              <div class="auth-status" id="auth-mode-label">ログイン</div>
-              <div class="field">
-                <label for="auth-email">メールアドレス</label>
-                <input id="auth-email" name="email" type="email" maxlength="120" autocomplete="email" required />
+            <div class="board-shell">
+              <form class="board-form" id="board-form">
+                <div class="field">
+                  <label for="board-name">名前</label>
+                  <input id="board-name" name="name" type="text" maxlength="40" autocomplete="name" placeholder="例：中央通り利用者" required />
+                </div>
+                <div class="field">
+                  <label for="board-message">投稿内容</label>
+                  <textarea id="board-message" name="message" maxlength="500" placeholder="例：栗林公園北側、工事で1車線規制中です。" required></textarea>
+                </div>
+                <button class="board-submit" type="submit">投稿する</button>
+                <p class="board-status" id="board-status" role="status" aria-live="polite"></p>
+              </form>
+              <div class="board-feed" aria-live="polite">
+                <div class="board-toolbar">
+                  <strong>最新の投稿</strong>
+                  <button class="board-refresh" id="board-refresh" type="button">更新</button>
+                </div>
+                <div class="board-list" id="board-list">
+                  <p class="board-empty">Supabaseの接続設定を入れると投稿を読み込みます。</p>
+                </div>
               </div>
-              <div class="field">
-                <label for="auth-password">パスワード</label>
-                <input id="auth-password" name="password" type="password" minlength="6" maxlength="72" autocomplete="current-password" required />
-              </div>
-              <div class="field" id="confirm-password-field" hidden>
-                <label for="auth-password-confirm">確認用パスワード</label>
-                <input id="auth-password-confirm" name="passwordConfirm" type="password" minlength="6" maxlength="72" autocomplete="new-password" />
-              </div>
-              <div class="auth-actions">
-                <button class="auth-button secondary" id="show-login-button" type="button">ログイン用</button>
-                <button class="auth-button secondary" id="show-signup-button" type="button">新規登録用</button>
-                <button class="auth-button" id="auth-submit-button" type="submit">ログインして掲示板へ</button>
-              </div>
-              <p class="auth-status" id="auth-status" role="status" aria-live="polite">ログインにはメールアドレスとパスワードが必要です。</p>
-            </form>
+            </div>
           </div>
         </section>
 
@@ -1114,117 +1054,132 @@
     <script>
       const SUPABASE_URL = "https://sasdgpkdnxdfzsgeicnj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_qAMFmmtvr6OzLyjN_5cIMA_8nOiTjQD";
-      const AUTH_PROFILE_TABLE = "auth_profiles";
+      const BOARD_TABLE = "board_posts";
 
-      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const authForm = document.querySelector("#auth-form");
-      const authModeLabel = document.querySelector("#auth-mode-label");
-      const authEmail = document.querySelector("#auth-email");
-      const authPassword = document.querySelector("#auth-password");
-      const authPasswordConfirm = document.querySelector("#auth-password-confirm");
-      const confirmPasswordField = document.querySelector("#confirm-password-field");
-      const showLoginButton = document.querySelector("#show-login-button");
-      const showSignupButton = document.querySelector("#show-signup-button");
-      const authSubmitButton = document.querySelector("#auth-submit-button");
-      const authStatus = document.querySelector("#auth-status");
-      let authMode = "login";
+      const boardForm = document.querySelector("#board-form");
+      const boardList = document.querySelector("#board-list");
+      const boardStatus = document.querySelector("#board-status");
+      const boardRefresh = document.querySelector("#board-refresh");
+      const boardSubmit = document.querySelector(".board-submit");
+      const isConfigured = SUPABASE_URL.startsWith("https://") && SUPABASE_ANON_KEY.length > 40;
+      const supabaseClient = isConfigured ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-      function setStatus(message) {
-        authStatus.textContent = message;
+      function setBoardStatus(message) {
+        boardStatus.textContent = message;
       }
 
-      function setMode(mode) {
-        authMode = mode;
-        const isSignup = mode === "signup";
-        confirmPasswordField.hidden = !isSignup;
-        authPassword.autocomplete = isSignup ? "new-password" : "current-password";
-        authPasswordConfirm.required = isSignup;
-        authModeLabel.textContent = isSignup ? "新規登録" : "ログイン";
-        authSubmitButton.textContent = isSignup ? "新規登録する" : "ログインして掲示板へ";
-        showSignupButton.classList.toggle("active", isSignup);
-        showLoginButton.classList.toggle("active", !isSignup);
-        setStatus(isSignup ? "新規登録にはメールアドレス、パスワード、確認用パスワードが必要です。" : "ログインにはメールアドレスとパスワードが必要です。");
+      function renderEmpty(message) {
+        boardList.replaceChildren();
+        const empty = document.createElement("p");
+        empty.className = "board-empty";
+        empty.textContent = message;
+        boardList.append(empty);
       }
 
-      function setBusy(isBusy) {
-        authSubmitButton.disabled = isBusy;
-        showLoginButton.disabled = isBusy;
-        showSignupButton.disabled = isBusy;
+      function formatPostedAt(value) {
+        return new Intl.DateTimeFormat("ja-JP", {
+          month: "numeric",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(new Date(value));
       }
 
-      async function saveSignupProfile(user, email) {
-        if (!user?.id) {
-          return null;
+      function renderPosts(posts) {
+        boardList.replaceChildren();
+
+        if (!posts.length) {
+          renderEmpty("まだ投稿はありません。最初の道路状況を共有してください。");
+          return;
         }
 
-        return supabaseClient.from(AUTH_PROFILE_TABLE).insert({
-          auth_user_id: user.id,
-          email,
+        posts.forEach((post) => {
+          const article = document.createElement("article");
+          article.className = "board-message";
+
+          const meta = document.createElement("div");
+          meta.className = "message-meta";
+
+          const name = document.createElement("span");
+          name.className = "message-name";
+          name.textContent = post.name;
+
+          const time = document.createElement("time");
+          time.dateTime = post.created_at;
+          time.textContent = formatPostedAt(post.created_at);
+
+          const text = document.createElement("p");
+          text.className = "message-text";
+          text.textContent = post.message;
+
+          meta.append(name, time);
+          article.append(meta, text);
+          boardList.append(article);
         });
       }
 
-      showLoginButton.addEventListener("click", () => setMode("login"));
-      showSignupButton.addEventListener("click", () => setMode("signup"));
-
-      authForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const email = authEmail.value.trim();
-        const password = authPassword.value;
-        const passwordConfirm = authPasswordConfirm.value;
-
-        if (!email || !password) {
-          setStatus("メールアドレスとパスワードを入力してください。");
+      async function loadPosts() {
+        if (!supabaseClient) {
+          renderEmpty("SupabaseのURLとanon keyをindex.htmlに設定してください。");
+          setBoardStatus("未接続です。Supabase設定後に投稿できます。");
+          boardSubmit.disabled = true;
           return;
         }
 
-        if (authMode === "signup" && password !== passwordConfirm) {
-          setStatus("確認用パスワードが一致していません。");
-          return;
-        }
-
-        setBusy(true);
-        setStatus(authMode === "signup" ? "新規登録しています。" : "ログインしています。");
-
-        const boardUrl = new URL("board.html", window.location.href).href;
-        const { data, error } = authMode === "signup"
-          ? await supabaseClient.auth.signUp({
-              email,
-              password,
-              options: { emailRedirectTo: boardUrl },
-            })
-          : await supabaseClient.auth.signInWithPassword({ email, password });
-
-        setBusy(false);
+        setBoardStatus("投稿を読み込み中です。");
+        const { data, error } = await supabaseClient
+          .from(BOARD_TABLE)
+          .select("id,name,message,created_at")
+          .order("created_at", { ascending: false })
+          .limit(30);
 
         if (error) {
-          setStatus(error.message);
+          renderEmpty("投稿を読み込めませんでした。SupabaseのテーブルとRLS設定を確認してください。");
+          setBoardStatus(error.message);
           return;
         }
 
-        if (authMode === "signup") {
-          const profileResult = await saveSignupProfile(data.user, email);
-          if (profileResult?.error) {
-            console.warn("auth profile save failed", profileResult.error.message);
-          }
-        }
+        renderPosts(data || []);
+        setBoardStatus("最新の投稿を表示しています。");
+      }
 
-        if (authMode === "signup" && !data.session) {
-          authForm.reset();
-          setMode("login");
-          setStatus("確認メールを送信しました。メール内のリンクを開いてからログインしてください。");
+      boardRefresh.addEventListener("click", loadPosts);
+
+      boardForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (!supabaseClient) {
+          setBoardStatus("Supabaseの接続設定が必要です。");
           return;
         }
 
-        window.location.href = "board.html";
-      });
+        const formData = new FormData(boardForm);
+        const name = String(formData.get("name") || "").trim();
+        const message = String(formData.get("message") || "").trim();
 
-      supabaseClient.auth.getSession().then(({ data }) => {
-        if (data.session) {
-          setStatus("ログイン済みです。ログインボタンを押すと掲示板へ移動します。");
+        if (!name || !message) {
+          setBoardStatus("名前と投稿内容を入力してください。");
+          return;
         }
+
+        boardSubmit.disabled = true;
+        setBoardStatus("投稿しています。");
+
+        const { error } = await supabaseClient.from(BOARD_TABLE).insert({ name, message });
+
+        boardSubmit.disabled = false;
+
+        if (error) {
+          setBoardStatus(error.message);
+          return;
+        }
+
+        boardForm.reset();
+        setBoardStatus("投稿しました。");
+        await loadPosts();
       });
 
-      setMode("login");
+      loadPosts();
     </script>
   </body>
 </html>
