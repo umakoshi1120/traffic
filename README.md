@@ -7,6 +7,8 @@ Static landing page for GitHub Pages with a Supabase-backed bulletin board.
 - The landing page is in `index.html`.
 - The bulletin board UI is embedded in the `#board` section.
 - Posts are read from and inserted into the Supabase table `public.board_posts`.
+- The registration page is in `register.html`.
+- Registration requests are inserted into the Supabase table `public.registration_requests`.
 - The database setup SQL is in `supabase-schema.sql`.
 
 ## Supabase setup from account creation
@@ -40,6 +42,10 @@ The anon key is public by design. Do not paste the service role key into fronten
 
 The table uses Row Level Security policies that allow anonymous visitors to read posts and create posts only. Update and delete are not granted to public users.
 
+The registration table allows anonymous visitors to create registration requests only. Public read is not granted, so submitted email addresses are not readable through the anon key.
+
 ## Local check
 
 After setting the URL and anon key, open `index.html` in a browser and try a test post. If the board says the Supabase table or RLS settings cannot be found, run `supabase-schema.sql` again in the same Supabase project.
+
+After adding the registration page, run `supabase-schema.sql` again in Supabase SQL Editor, then open `register.html` and submit a test registration.

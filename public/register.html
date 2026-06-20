@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>利用登録 | TAKAMATSU FLOW</title>
+    <meta name="description" content="TAKAMATSU FLOWの利用登録ページです。メールアドレス、名前、主に使用するエリアを登録できます。" />
+    <style>
+      :root {
+        --ink: #12232e;
+        --muted: #52636d;
+        --line: rgba(18, 35, 46, 0.14);
+        --paper: #fbfcf8;
+        --teal: #007b72;
+        --blue: #165d9f;
+        --yellow: #f3b43f;
+        --coral: #e65f4b;
+        --shadow: 0 24px 70px rgba(18, 35, 46, 0.16);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
+        line-height: 1.65;
+        letter-spacing: 0;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px clamp(18px, 4vw, 56px);
+        background: rgba(251, 252, 248, 0.88);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-width: max-content;
+        font-weight: 800;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        color: #fff;
+        background: var(--teal);
+        border-radius: 7px;
+      }
+
+      .back-link {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      main {
+        min-height: calc(100vh - 72px);
+        padding: clamp(42px, 7vw, 82px) clamp(18px, 4vw, 56px);
+      }
+
+      .register-layout {
+        width: min(1040px, 100%);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1fr);
+        gap: clamp(28px, 5vw, 62px);
+        align-items: start;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 18px;
+        color: var(--teal);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        background: var(--yellow);
+        border-radius: 50%;
+        box-shadow: 18px 0 0 var(--coral), 36px 0 0 var(--blue);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(34px, 6vw, 64px);
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        margin: 22px 0 0;
+        color: #334a55;
+        font-size: clamp(16px, 2vw, 20px);
+        font-weight: 650;
+      }
+
+      .note-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .note {
+        display: grid;
+        grid-template-columns: 38px 1fr;
+        gap: 12px;
+        align-items: start;
+        padding: 16px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .note-icon {
+        display: grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        color: #fff;
+        background: var(--blue);
+        border-radius: 7px;
+        font-weight: 900;
+      }
+
+      .note strong {
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .note p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .register-card {
+        padding: clamp(22px, 4vw, 34px);
+        background: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .field {
+        display: grid;
+        gap: 7px;
+        margin-bottom: 16px;
+      }
+
+      .field label,
+      .area-title {
+        font-size: 13px;
+        font-weight: 850;
+      }
+
+      .field input {
+        width: 100%;
+        min-height: 46px;
+        padding: 10px 12px;
+        color: var(--ink);
+        background: #fbfcf8;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font: inherit;
+        letter-spacing: 0;
+      }
+
+      .field input:focus,
+      .area-option input:focus-visible + span {
+        outline: 3px solid rgba(0, 123, 114, 0.16);
+        border-color: var(--teal);
+      }
+
+      .area-group {
+        margin: 0 0 18px;
+        padding: 0;
+        border: 0;
+      }
+
+      .area-title {
+        margin-bottom: 10px;
+        padding: 0;
+      }
+
+      .area-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .area-option input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .area-option span {
+        display: grid;
+        place-items: center;
+        min-height: 42px;
+        padding: 8px 10px;
+        color: var(--ink);
+        background: #fbfcf8;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .area-option input:checked + span {
+        color: #fff;
+        background: var(--teal);
+        border-color: var(--teal);
+      }
+
+      .register-submit {
+        width: 100%;
+        min-height: 48px;
+        color: #fff;
+        background: var(--teal);
+        border: 0;
+        border-radius: 7px;
+        font: inherit;
+        font-weight: 850;
+        cursor: pointer;
+      }
+
+      .register-submit:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .form-status {
+        min-height: 24px;
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      footer {
+        padding: 24px clamp(18px, 4vw, 56px);
+        color: var(--muted);
+        background: #fff;
+        border-top: 1px solid var(--line);
+        font-size: 13px;
+      }
+
+      @media (max-width: 860px) {
+        .register-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .area-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 520px) {
+        .site-header {
+          padding-inline: 14px;
+        }
+
+        .brand span:last-child {
+          font-size: 14px;
+        }
+
+        .back-link {
+          font-size: 13px;
+        }
+
+        .area-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="TAKAMATSU FLOW">
+        <span class="brand-mark" aria-hidden="true">→</span>
+        <span>TAKAMATSU FLOW</span>
+      </a>
+      <a class="back-link" href="index.html">LPに戻る</a>
+    </header>
+
+    <main>
+      <div class="register-layout">
+        <section>
+          <p class="eyebrow">利用登録</p>
+          <h1>高松市の移動支援システムに申し込む</h1>
+          <p class="lead">
+            メールアドレス、名前、主に使用するエリアを登録してください。登録内容をもとに、利用開始に向けた案内をお送りします。
+          </p>
+          <div class="note-list">
+            <article class="note">
+              <span class="note-icon">1</span>
+              <div>
+                <strong>登録情報を送信</strong>
+                <p>必要事項はメールアドレス、名前、主な利用エリアだけです。</p>
+              </div>
+            </article>
+            <article class="note">
+              <span class="note-icon">2</span>
+              <div>
+                <strong>対象エリアを確認</strong>
+                <p>市街地、仏生山、国分寺、香南、山田、塩江、牟礼、屋島、離島から選択できます。</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <form class="register-card" id="registration-form">
+          <div class="field">
+            <label for="name">名前</label>
+            <input id="name" name="name" type="text" maxlength="60" autocomplete="name" required />
+          </div>
+
+          <div class="field">
+            <label for="email">メールアドレス</label>
+            <input id="email" name="email" type="email" maxlength="120" autocomplete="email" required />
+          </div>
+
+          <fieldset class="area-group">
+            <legend class="area-title">主に使用するエリア</legend>
+            <div class="area-grid">
+              <label class="area-option"><input type="radio" name="area" value="市街地" required /><span>市街地</span></label>
+              <label class="area-option"><input type="radio" name="area" value="仏生山" /><span>仏生山</span></label>
+              <label class="area-option"><input type="radio" name="area" value="国分寺" /><span>国分寺</span></label>
+              <label class="area-option"><input type="radio" name="area" value="香南" /><span>香南</span></label>
+              <label class="area-option"><input type="radio" name="area" value="山田" /><span>山田</span></label>
+              <label class="area-option"><input type="radio" name="area" value="塩江" /><span>塩江</span></label>
+              <label class="area-option"><input type="radio" name="area" value="牟礼" /><span>牟礼</span></label>
+              <label class="area-option"><input type="radio" name="area" value="屋島" /><span>屋島</span></label>
+              <label class="area-option"><input type="radio" name="area" value="離島" /><span>離島</span></label>
+            </div>
+          </fieldset>
+
+          <button class="register-submit" type="submit">登録内容を送信する</button>
+          <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </main>
+
+    <footer>© 2026 TAKAMATSU FLOW</footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const SUPABASE_URL = "https://sasdgpkdnxdfzsgeicnj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_qAMFmmtvr6OzLyjN_5cIMA_8nOiTjQD";
+      const REGISTRATION_TABLE = "registration_requests";
+
+      const form = document.querySelector("#registration-form");
+      const statusText = document.querySelector("#form-status");
+      const submitButton = document.querySelector(".register-submit");
+      const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      function setStatus(message) {
+        statusText.textContent = message;
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+        const name = String(formData.get("name") || "").trim();
+        const email = String(formData.get("email") || "").trim();
+        const area = String(formData.get("area") || "").trim();
+
+        if (!name || !email || !area) {
+          setStatus("名前、メールアドレス、利用エリアを入力してください。");
+          return;
+        }
+
+        submitButton.disabled = true;
+        setStatus("登録内容を送信しています。");
+
+        const { error } = await client.from(REGISTRATION_TABLE).insert({ name, email, area });
+
+        submitButton.disabled = false;
+
+        if (error) {
+          setStatus("送信できませんでした。Supabaseの登録テーブル設定を確認してください。");
+          return;
+        }
+
+        form.reset();
+        setStatus("登録を受け付けました。ご案内をお待ちください。");
+      });
+    </script>
+  </body>
+</html>
