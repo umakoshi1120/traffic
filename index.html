@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TAKAMATSU FLOW | 高松市の交通状況から最短経路を提示</title>
+    <meta
+      name="description"
+      content="TAKAMATSU FLOWは、Google Mapを活用して高松市内の交通状況を把握し、移動中の自動車へ最短経路を提示する交通ナビゲーションサービスです。"
+    />
+    <style>
+      :root {
+        --ink: #12232e;
+        --muted: #52636d;
+        --line: rgba(18, 35, 46, 0.14);
+        --paper: #fbfcf8;
+        --panel: rgba(255, 255, 255, 0.92);
+        --teal: #007b72;
+        --blue: #165d9f;
+        --yellow: #f3b43f;
+        --coral: #e65f4b;
+        --shadow: 0 24px 70px rgba(18, 35, 46, 0.18);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--paper);
+        font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, system-ui, sans-serif;
+        line-height: 1.65;
+        letter-spacing: 0;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .site-header {
+        position: fixed;
+        inset: 0 0 auto;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 18px clamp(18px, 4vw, 56px);
+        background: rgba(251, 252, 248, 0.82);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-width: max-content;
+        font-weight: 800;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        color: #fff;
+        background: var(--teal);
+        border-radius: 7px;
+      }
+
+      .brand svg {
+        width: 21px;
+        height: 21px;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: clamp(12px, 2vw, 28px);
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .nav a:hover {
+        color: var(--ink);
+      }
+
+      .header-cta,
+      .primary-cta,
+      .secondary-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        border-radius: 7px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .header-cta,
+      .primary-cta {
+        color: #fff;
+        background: var(--teal);
+        box-shadow: 0 12px 26px rgba(0, 123, 114, 0.24);
+      }
+
+      .header-cta {
+        padding: 0 18px;
+      }
+
+      .primary-cta,
+      .secondary-cta {
+        gap: 10px;
+        padding: 0 22px;
+      }
+
+      .secondary-cta {
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid var(--line);
+      }
+
+      .hero {
+        position: relative;
+        min-height: 94vh;
+        display: grid;
+        align-items: end;
+        overflow: hidden;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .map-bg {
+        position: absolute;
+        inset: 0;
+        background: #d9e5df;
+      }
+
+      .map-bg iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        filter: saturate(1.05) contrast(0.96);
+      }
+
+      .map-scrim {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(90deg, rgba(251, 252, 248, 0.95) 0%, rgba(251, 252, 248, 0.78) 40%, rgba(251, 252, 248, 0.28) 100%),
+          linear-gradient(0deg, rgba(251, 252, 248, 0.95) 0%, rgba(251, 252, 248, 0.12) 42%);
+        pointer-events: none;
+      }
+
+      .hero-inner {
+        position: relative;
+        z-index: 1;
+        width: min(1180px, calc(100% - 36px));
+        margin: 0 auto;
+        padding: 124px 0 56px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+        gap: clamp(28px, 5vw, 66px);
+        align-items: end;
+      }
+
+      .hero-copy {
+        max-width: 720px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 0 18px;
+        color: var(--teal);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        background: var(--yellow);
+        border-radius: 50%;
+        box-shadow: 18px 0 0 var(--coral), 36px 0 0 var(--blue);
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 760px;
+        font-size: clamp(38px, 7vw, 82px);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 660px;
+        margin: 24px 0 0;
+        color: #334a55;
+        font-size: clamp(16px, 2.1vw, 21px);
+        font-weight: 650;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 34px;
+      }
+
+      .route-console {
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .console-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 32px;
+        padding: 0 11px;
+        color: #fff;
+        background: var(--blue);
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #61e4a7;
+        border-radius: 50%;
+      }
+
+      .console-body {
+        padding: 18px;
+      }
+
+      .route-card {
+        display: grid;
+        grid-template-columns: 44px 1fr auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .route-card:last-child {
+        border-bottom: 0;
+      }
+
+      .route-icon {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        color: #fff;
+        background: var(--teal);
+        border-radius: 7px;
+      }
+
+      .route-icon.delay {
+        background: var(--coral);
+      }
+
+      .route-icon svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .route-name {
+        margin: 0;
+        font-weight: 850;
+      }
+
+      .route-meta {
+        margin: 2px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .time {
+        text-align: right;
+        font-weight: 900;
+        font-size: 22px;
+      }
+
+      .time span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .below-hero {
+        position: relative;
+        z-index: 2;
+        background: var(--paper);
+      }
+
+      section {
+        padding: clamp(54px, 8vw, 96px) clamp(18px, 4vw, 56px);
+      }
+
+      .section-inner {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+      }
+
+      .section-head {
+        display: grid;
+        grid-template-columns: minmax(0, 0.85fr) minmax(280px, 1fr);
+        gap: 28px;
+        align-items: end;
+        margin-bottom: 32px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(28px, 4.8vw, 50px);
+        line-height: 1.16;
+        letter-spacing: 0;
+      }
+
+      .section-head p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .feature {
+        min-height: 250px;
+        padding: 24px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .feature svg,
+      .step svg {
+        width: 34px;
+        height: 34px;
+        color: var(--teal);
+      }
+
+      .feature h3,
+      .step h3 {
+        margin: 18px 0 8px;
+        font-size: 20px;
+        line-height: 1.35;
+      }
+
+      .feature p,
+      .step p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .flow-band {
+        background: #eaf3ef;
+        border-block: 1px solid var(--line);
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .step {
+        min-height: 236px;
+        padding: 24px;
+        background: #fff;
+      }
+
+      .step-num {
+        display: inline-grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        color: #fff;
+        background: var(--ink);
+        border-radius: 7px;
+        font-weight: 900;
+      }
+
+      .map-section {
+        padding-bottom: 0;
+      }
+
+      .live-map {
+        position: relative;
+        min-height: 520px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        overflow: hidden;
+        background: #d9e5df;
+      }
+
+      .live-map iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+
+      .map-note {
+        position: absolute;
+        left: clamp(18px, 4vw, 56px);
+        bottom: 24px;
+        width: min(430px, calc(100% - 36px));
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.93);
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .map-note strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 18px;
+      }
+
+      .map-note p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .audience {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 28px;
+        align-items: center;
+      }
+
+      .audience-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .audience-item {
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        gap: 14px;
+        align-items: start;
+        padding: 18px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .check {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        color: #fff;
+        background: var(--blue);
+        border-radius: 7px;
+        font-weight: 900;
+      }
+
+      .audience-item h3 {
+        margin: 0 0 4px;
+        font-size: 17px;
+      }
+
+      .audience-item p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .cta-band {
+        color: #fff;
+        background: var(--ink);
+      }
+
+      .cta-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: center;
+      }
+
+      .cta-inner h2 {
+        max-width: 760px;
+      }
+
+      .cta-inner p {
+        max-width: 690px;
+        margin: 16px 0 0;
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      .cta-band .primary-cta {
+        background: var(--yellow);
+        color: var(--ink);
+        box-shadow: none;
+      }
+
+      footer {
+        padding: 28px clamp(18px, 4vw, 56px);
+        color: var(--muted);
+        background: #fff;
+        border-top: 1px solid var(--line);
+      }
+
+      .footer-inner {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+        font-size: 13px;
+      }
+
+      @media (max-width: 860px) {
+        .site-header {
+          position: absolute;
+        }
+
+        .nav {
+          display: none;
+        }
+
+        .hero {
+          min-height: auto;
+        }
+
+        .hero-inner,
+        .section-head,
+        .audience,
+        .cta-inner {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-inner {
+          padding-top: 106px;
+        }
+
+        .feature-grid,
+        .steps {
+          grid-template-columns: 1fr;
+        }
+
+        .route-console {
+          max-width: 480px;
+        }
+
+        .live-map {
+          min-height: 460px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .site-header {
+          padding-inline: 14px;
+        }
+
+        .brand span:last-child {
+          font-size: 14px;
+        }
+
+        .header-cta {
+          min-height: 38px;
+          padding-inline: 12px;
+          font-size: 13px;
+        }
+
+        .hero-inner {
+          width: min(100% - 28px, 1180px);
+        }
+
+        .hero-actions {
+          display: grid;
+        }
+
+        .primary-cta,
+        .secondary-cta {
+          width: 100%;
+        }
+
+        .route-card {
+          grid-template-columns: 38px 1fr;
+        }
+
+        .route-icon {
+          width: 38px;
+          height: 38px;
+        }
+
+        .time {
+          grid-column: 2;
+          text-align: left;
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="TAKAMATSU FLOW">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M4 16.5 8.5 12 4 7.5M10 18l6-6-6-6M17 18l3-3-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+        <span>TAKAMATSU FLOW</span>
+      </a>
+      <nav class="nav" aria-label="主要ナビゲーション">
+        <a href="#features">特徴</a>
+        <a href="#flow">仕組み</a>
+        <a href="#map">Google Map活用</a>
+        <a href="#target">対象</a>
+      </nav>
+      <a class="header-cta" href="#contact">導入相談</a>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-label="高松市の交通状況から最短経路を提示">
+        <div class="map-bg" aria-hidden="true">
+          <iframe
+            title="高松市のGoogle Map"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=%E9%AB%98%E6%9D%BE%E5%B8%82&z=13&output=embed"
+          ></iframe>
+          <div class="map-scrim"></div>
+        </div>
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <p class="eyebrow">Google Mapで交通状況を把握</p>
+            <h1>高松市を走るすべての車に、いま一番早い道を。</h1>
+            <p class="lead">
+              TAKAMATSU FLOWは、高松市内の道路状況をGoogle Mapから把握し、渋滞・混雑・迂回を考慮した最短経路をリアルタイムに提示する移動支援サービスです。
+            </p>
+            <div class="hero-actions">
+              <a class="primary-cta" href="#contact">
+                導入について相談
+                <span aria-hidden="true">→</span>
+              </a>
+              <a class="secondary-cta" href="#map">地図連携を見る</a>
+            </div>
+          </div>
+
+          <aside class="route-console" aria-label="推奨経路の例">
+            <div class="console-top">
+              <strong>高松駅 → 仏生山</strong>
+              <span class="status-pill"><span class="status-dot"></span>解析中</span>
+            </div>
+            <div class="console-body">
+              <div class="route-card">
+                <div class="route-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12h12M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="route-name">推奨ルート</p>
+                  <p class="route-meta">中央通りの混雑を回避</p>
+                </div>
+                <div class="time">18分<span>最短</span></div>
+              </div>
+              <div class="route-card">
+                <div class="route-icon delay" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="route-name">通常ルート</p>
+                  <p class="route-meta">県道160号で混雑検知</p>
+                </div>
+                <div class="time">27分<span>+9分</span></div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <div class="below-hero">
+        <section id="features">
+          <div class="section-inner">
+            <div class="section-head">
+              <h2>移動中の判断を、道路状況に合わせて更新。</h2>
+              <p>
+                高松市内を走行する全自動車を対象に、現在地・目的地・Google Map上の交通状況をもとに、実用的な経路候補を提示します。
+              </p>
+            </div>
+            <div class="feature-grid">
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 18 3 21V6l6-3 6 3 6-3v15l-6 3-6-3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M9 3v15M15 6v15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <h3>Google Mapで交通状況を取得</h3>
+                <p>高松市周辺の混雑や道路状況をGoogle Mapから把握し、経路判断の基礎データとして活用します。</p>
+              </article>
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4 17 9 12l4 4 7-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M15 8h5v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <h3>最短経路を即時に提示</h3>
+                <p>距離だけでなく、現在の混雑による遅れも加味して、より早く到着できるルートを案内します。</p>
+              </article>
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 19V8a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v11M5 19h14M8 19v-3h8v3M8 11h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <h3>自家用車から業務車両まで</h3>
+                <p>通勤、配送、営業、観光移動など、高松市内を移動するあらゆる自動車の効率化を支えます。</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="flow" class="flow-band">
+          <div class="section-inner">
+            <div class="section-head">
+              <h2>シンプルな4ステップで、迷いを減らす。</h2>
+              <p>ドライバーが目的地を入力すると、サービスが現在の交通状況を確認し、推奨経路をわかりやすく提示します。</p>
+            </div>
+            <div class="steps">
+              <article class="step">
+                <span class="step-num">1</span>
+                <h3>現在地と目的地を入力</h3>
+                <p>高松市内の移動先を指定。出発地点は現在地または任意地点から選べます。</p>
+              </article>
+              <article class="step">
+                <span class="step-num">2</span>
+                <h3>Google Mapで道路状況を確認</h3>
+                <p>混雑、所要時間、経路候補を把握し、到着時間に影響する要素を整理します。</p>
+              </article>
+              <article class="step">
+                <span class="step-num">3</span>
+                <h3>候補ルートを比較</h3>
+                <p>主要道路、生活道路、迂回路を比較し、目的に合う最短ルートを選定します。</p>
+              </article>
+              <article class="step">
+                <span class="step-num">4</span>
+                <h3>走行中も更新</h3>
+                <p>状況変化に合わせて、より早い経路が見つかったタイミングで案内を更新します。</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="map" class="map-section">
+          <div class="section-inner">
+            <div class="section-head">
+              <h2>高松市の地図を見ながら、混雑を避ける。</h2>
+              <p>
+                サービスの交通状況把握にはGoogle Mapを利用。慣れた地図体験をベースに、最短経路提示の意思決定を支えます。
+              </p>
+            </div>
+          </div>
+          <div class="live-map">
+            <iframe
+              title="高松市周辺のGoogle Map"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              src="https://www.google.com/maps?q=%E9%AB%98%E6%9D%BE%E5%B8%82%20%E4%B8%AD%E5%A4%AE%E9%80%9A%E3%82%8A&z=14&output=embed"
+            ></iframe>
+            <div class="map-note">
+              <strong>Google Map連携を前提にした交通把握</strong>
+              <p>実運用ではGoogle Maps Platform等の利用条件に沿って、交通状況と経路情報を取得・表示します。</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="target">
+          <div class="section-inner audience">
+            <div>
+              <p class="eyebrow">対象は高松市を移動している全自動車</p>
+              <h2>個人の移動にも、街全体の移動効率にも。</h2>
+            </div>
+            <div class="audience-list">
+              <article class="audience-item">
+                <div class="check">✓</div>
+                <div>
+                  <h3>通勤・通学・買い物の自家用車</h3>
+                  <p>朝夕の混雑やイベント時の渋滞を避け、日常の移動時間を短縮します。</p>
+                </div>
+              </article>
+              <article class="audience-item">
+                <div class="check">✓</div>
+                <div>
+                  <h3>配送・営業・送迎などの業務車両</h3>
+                  <p>複数拠点を回る車両にも、時間ロスを抑える経路選択を提供します。</p>
+                </div>
+              </article>
+              <article class="audience-item">
+                <div class="check">✓</div>
+                <div>
+                  <h3>観光・来訪者のレンタカー</h3>
+                  <p>土地勘のないドライバーにも、わかりやすく高松市内の移動を案内します。</p>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="contact" class="cta-band">
+          <div class="section-inner cta-inner">
+            <div>
+              <h2>高松市の移動を、もっと早く、もっと読みやすく。</h2>
+              <p>
+                自治体、交通関連事業者、配送・営業車両を持つ企業向けに、Google Mapを活用した最短経路提示サービスの導入相談を受け付けています。
+              </p>
+            </div>
+            <a class="primary-cta" href="mailto:contact@example.com?subject=TAKAMATSU%20FLOW%E5%B0%8E%E5%85%A5%E7%9B%B8%E8%AB%87">メールで相談する</a>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <span>© 2026 TAKAMATSU FLOW</span>
+        <span>Google Mapを活用した高松市向け交通ナビゲーションLP</span>
+      </div>
+    </footer>
+  </body>
+</html>
