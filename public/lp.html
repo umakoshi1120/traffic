@@ -1110,6 +1110,7 @@
     <script>
       const SUPABASE_URL = "https://sasdgpkdnxdfzsgeicnj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_qAMFmmtvr6OzLyjN_5cIMA_8nOiTjQD";
+      const AUTH_PROFILE_TABLE = "auth_profiles";
 
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       const authForm = document.querySelector("#auth-form");
@@ -1147,6 +1148,17 @@
         showSignupButton.disabled = isBusy;
       }
 
+      async function saveSignupProfile(user, email) {
+        if (!user?.id) {
+          return null;
+        }
+
+        return supabaseClient.from(AUTH_PROFILE_TABLE).insert({
+          auth_user_id: user.id,
+          email,
+        });
+      }
+
       showLoginButton.addEventListener("click", () => setMode("login"));
       showSignupButton.addEventListener("click", () => setMode("signup"));
 
@@ -1178,6 +1190,14 @@
         if (error) {
           setStatus(error.message);
           return;
+        }
+
+        if (authMode === "signup") {
+          const profileResult = await saveSignupProfile(data.user, email);
+          if (profileResult?.error) {
+            setStatus(`Auth登録は完了しましたが、一覧テーブルへの保存に失敗しました: ${profileResult.error.message}`);
+            return;
+          }
         }
 
         if (authMode === "signup" && !data.session) {
